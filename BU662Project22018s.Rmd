@@ -1,0 +1,121 @@
+
+1)For this project i will analyze how life expectancy("SP.DYN.LE00.IN") is affected by 
+a) number of people affected by HIV("SH.HIV.TOTL.NUM")
+b)People using safely managed sanitation services (% of population)("SH.STA.SMSS.ZS")
+
+2)For this project i will analyze how Population growth (annual %)("SP.POP.GROW") is affected by
+a) Unemployment rate - working age("ccx_unempr_pop_wrk")
+b)Access to electricity (% of population)("EG.ELC.ACCS.ZS")
+
+
+3)For this project i will analyze if Refugee population by country or territory of asylum("SM.POP.REFG") affects the Intentional homicides (per 100,000 people)("VC.IHR.PSRC.P5")
+
+4) relation between Maternity leave (days paid)("SH.MMR.LEVE") and GDP ("NY.GDP.MKTP.CD")
+
+```{r}
+##install.packages("WDI")
+library(WDI)
+##install.packages("corrplot")
+library(corrplot)
+
+```
+
+
+```{r}
+wb.arun = WDI(country = "all", indicator = c("SP.DYN.LE00.IN","SH.HIV.TOTL.NUM","SH.STA.SMSS.ZS","SP.POP.GROW","ccx_unempr_pop_wrk","EG.ELC.ACCS.ZS","SM.POP.REFG","VC.IHR.PSRC.P5","SH.MMR.LEVE","NY.GDP.MKTP.CD"), start = 1900, end = 2017)
+summary(wb.arun)
+nrow(wb.arun)
+```
+
+```{r}
+
+
+colnames(wb.arun)[colnames(wb.arun)=="SP.DYN.LE00.IN"] <- "Life_Expectancy"
+colnames(wb.arun)[colnames(wb.arun)=="SH.HIV.TOTL.NUM"] <- "People_HIV"
+colnames(wb.arun)[colnames(wb.arun)=="SH.STA.SMSS.ZS"] <- "Sanitation"
+colnames(wb.arun)[colnames(wb.arun)=="SP.POP.GROW"] <- "Population_growth"
+colnames(wb.arun)[colnames(wb.arun)=="ccx_unempr_pop_wrk"] <- "Unemploy_rate"
+colnames(wb.arun)[colnames(wb.arun)=="EG.ELC.ACCS.ZS"] <- "Electricity"
+colnames(wb.arun)[colnames(wb.arun)=="SM.POP.REFG"] <- "Refugee"
+colnames(wb.arun)[colnames(wb.arun)=="VC.IHR.PSRC.P5"] <- "Homicide"
+colnames(wb.arun)[colnames(wb.arun)=="SH.MMR.LEVE"] <- "Paid_Maternal"
+colnames(wb.arun)[colnames(wb.arun)=="NY.GDP.MKTP.CD"] <-  "GDP"
+
+```
+
+```{r}
+head(wb.arun,10)
+```
+
+
+```{r}
+wb.test1<-wb.arun[, c("year","Life_Expectancy","People_HIV","Sanitation")]
+wb.project1<-na.omit(wb.test1)
+head(wb.project1)
+summary(wb.project1)
+wb.different<- wb.arun[ which(wb.arun$Sanitation<5),]
+wb.different
+```
+```{r}
+josh1 <-cor(wb.project1, use="pairwise.complete.obs", method="kendall")
+josh1
+corrplot(josh1, method="number")
+plot(wb.project1$Life_Expectancy,wb.project1$Sanitation, xlab = "Life Expectancy", ylab = "Sanitation", pch =19)
+abline(lm(wb.project1$Sanitation~wb.project1$Life_Expectancy), col="red")
+	
+```
+
+```{r}
+wb.test2<-wb.arun[, c("year","Population_growth","Unemploy_rate","Electricity")]
+wb.project2<-na.omit(wb.test2)
+	summary(wb.project2)
+
+wb.differen1t<- wb.arun[ which(wb.arun$Electricity<4 & wb.arun$year>1998 ),]
+wb.differen1t
+```
+```{r}
+josh2 <-cor(wb.project2, use="pairwise.complete.obs", method="kendall")
+josh2
+corrplot(josh2, method="number")
+plot(wb.project2$Electricity,wb.project2$Population_growth, xlab = "Electricity", ylab = "Population Growth", type="h")
+abline(lm(wb.project2$Population_growth~wb.project2$Electricity), col="red")
+
+```
+
+```{r}
+wb.test3<-wb.arun[, c("year","Refugee","Homicide")]
+wb.project3<-na.omit(wb.test3)
+head(wb.project3)
+```
+```{r}
+josh3 <-cor(wb.project3, use="pairwise.complete.obs", method="kendall")
+josh3
+corrplot(josh3, method="color")
+
+```
+
+```{r}
+wb.test4<-wb.arun[, c("year","Paid_Maternal","GDP")]
+
+wb.project4<-na.omit(wb.test4)
+head(wb.project4)
+```
+```{r}
+josh4 <-cor(wb.project4, use="pairwise.complete.obs", method="kendall")
+josh4
+corrplot(josh4, type = "upper", order = "hclust",col = c("black", "white"), bg = "lightblue")
+
+plot(wb.project4$Paid_Maternal,wb.project4$GDP, xlab = "Paid Maternal leave Days", ylab = "Gross Domestic Product", type="h")
+
+
+	summary(wb.project4)
+```
+normal distribution. From this we know that one country has a maximum maternity leave of 630 days which was San miro
+```{r}
+wb.weirdo<- wb.arun[ which(wb.arun$Paid_Maternal=="630" ),]
+wb.weirdo
+
+```
+Maternity benefit: 100% of the insured's earnings is paid for five months (two months before and three months after the expected date of childbirth); thereafter, mothers can remain on leave and receive a benefit of 30% of earnings for one year and 20% for an additional six months, or they can return to work and take up to two hours of leave a day with full pay until the child is age 1.
+
+
